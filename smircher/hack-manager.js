@@ -79,10 +79,18 @@ export async function main(ns) {
 				} else if( getMoney && hThreads > 0) {
 					// Otherwise, hack it
 					if( ! ns.isRunning('/smircher/Remote/hack-target.js',name, ...sargs) ) {
-						ns.run('/smircher/Remote/hack-target.js', hThreads, ...sargs);
+						if( hThreads < 50 ) {
+							ns.run('/smircher/Remote/hack-target.js', hThreads, ...sargs);
+						} else {
+							let div = Math.floor(hThreads / 50);
+							let rem = hThreads - div;
+							for( let r = 0; r < div ; r++ ) {
+								ns.run('/smircher/Remote/hack-target.js', 50, ...sargs);
+							}
+							ns.run('/smircher/Remote/hack-target.js', rem, ...sargs);
+						}						
 					}
 				}
-				await ns.sleep(getRandomInt(100));
 			}
 			await ns.sleep(1000);
 		}
