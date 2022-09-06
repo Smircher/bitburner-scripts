@@ -1,5 +1,5 @@
 import {
-    formatMoney, launchScriptHelper, formatNumberShort, exec, log, getConfiguration, disableLogs, instanceCount
+    formatMoney, launchScriptHelper, exec, log, getConfiguration, disableLogs, instanceCount, scanAllServers
 } from '/smircher/utils.js'
 
 const argsSchema = [
@@ -84,17 +84,19 @@ export async function main(ns) {
     let initialized = 0;
     do {
         /** start from local, query and sort locally connected servers */
-        for ( let i = 0; i < depth; i++ ) {
-            /** get the array at the current depth, then fetch and order its kids*/
-            let s = sd[i];
-            let nextDepth = i+1;
-            let children = []
-            for( let ind in sd[i] ) {
-                buildtree(sd[i][ind],children);
-            }
-            let sorted = children.sort(ordering);
-            sd[nextDepth] = sorted;
-        }
+        // for ( let i = 0; i < depth; i++ ) {
+        //     /** get the array at the current depth, then fetch and order its kids*/
+        //     let s = sd[i];
+        //     let nextDepth = i+1;
+        //     let children = []
+        //     for( let ind in sd[i] ) {
+        //         buildtree(sd[i][ind],children);
+        //     }
+        //     let sorted = children.sort(ordering);
+        //     sd[nextDepth] = sorted;
+        // }
+        servers = await scanAllServers(ns);
+        servers.sort(ordering);
         for ( let i = 0; i < servers.length; i++ ) {
             let server = servers[i];
             let serverDetail = serverInfo(server);
@@ -104,11 +106,11 @@ export async function main(ns) {
             log(ns,`Server: ${server} Owned: ${serverDetail.purchasedByPlayer.toString()} 
                 hasAdminRights: ${serverDetail.hasAdminRights.toString()} 
                 MaxCash:${formatMoney(serverDetail.moneyMax)}`)
-            if ( ! serverDetail.hasAdminRights && serverDetail.hackDifficulty <= player.skills.hacking ) {
+            if ( ! serverDetail.hasAdminRights && serverDetail.requiredHackingSkill <= player.skills.hacking ) {
                 launchScriptHelper( ns, 'crack-host.js', [ serverDetail.hostname ] );
             }
             if( reload || !ns.fileExists('/smircher/hack-manager.js', serverDetail.hostname ) ) {
-                if ( serverDetail.hackDifficulty < player.skills.hacking ) {
+                if ( serverDetail.requiredHackingSkill < player.skills.hacking ) {
                     await killScripts( serverDetail.hostname );
                 }
                 if( serverDetail.hostname !== "home") {

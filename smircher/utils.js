@@ -394,7 +394,7 @@ function getExports(ns) {
 }
 
 // Some DOM helpers (partial credit to @ShamesBond)
-const doc = document;
+
 export async function click(ns,elem) {
 	await elem[Object.keys(elem)[1]].onClick({ isTrusted: true });
 	await ns.sleep(1000);
@@ -404,6 +404,7 @@ export async function setText(ns,input, text) {
 	await ns.sleep(1000);
 }
 export function find(xpath) {
+    const doc = document;
 	let item =  doc.evaluate(xpath, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null)
 	return item.singleNodeValue; 
 }
