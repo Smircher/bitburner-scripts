@@ -3,10 +3,11 @@ import {
 } from '/smircher/utils.js'
 
 const argsSchema = [
-    ['threshold', 0.9], // Threshold of system resources to use
+    ['threshold', 0.95], // Threshold of system resources to use
     ['loop', true], // Run as Daemon
     ['reload',false], // Should we copy scripts back to the targets if they are missing.
-    ['prioritize_xp', false], // Prioritize hack xp over money    
+    ['prioritize_xp', false], // Prioritize hack xp over money   
+    ['hack_cap',500], // At what point do we switch to money? 
     ['tail', false] // open tail window on run
 ];
 
@@ -32,7 +33,7 @@ export async function main(ns) {
     let depth = 10;
     let player = ns.getPlayer();
     let skipHost = ['darkweb'];
-
+    let hack_cap = options.hack_cap;
     let serverInfo = (x, useCache = true) => {
         if ( ! serverDetails[x]  || ! useCache )
             serverDetails[x] = ns.getServer(x); // If we do not have it cached, then fetch it
@@ -168,7 +169,7 @@ export async function main(ns) {
                     target = 'joesguns';
                     threshold = 0.95;
                 }
-                if((serverDetail.purchasedByPlayer || target == undefined) && ( player.skills.hacking < 500 || prioritize_xp ) && initialized < 1 ) {
+                if((serverDetail.purchasedByPlayer || target == undefined) && ( player.skills.hacking < hack_cap || prioritize_xp ) && initialized < 1 ) {
                     if( player.skills.hacking < 10 ) {
                         sargs = ['n00dles', threshold, false, growRam,hackRam,weakenRam];
                     } else {
