@@ -84,18 +84,6 @@ export async function main(ns) {
       }
     let initialized = 0;
     do {
-        /** start from local, query and sort locally connected servers */
-        // for ( let i = 0; i < depth; i++ ) {
-        //     /** get the array at the current depth, then fetch and order its kids*/
-        //     let s = sd[i];
-        //     let nextDepth = i+1;
-        //     let children = []
-        //     for( let ind in sd[i] ) {
-        //         buildtree(sd[i][ind],children);
-        //     }
-        //     let sorted = children.sort(ordering);
-        //     sd[nextDepth] = sorted;
-        // }
         servers = await scanAllServers(ns);
         servers.sort(ordering);
         for ( let i = 0; i < servers.length; i++ ) {
@@ -136,13 +124,13 @@ export async function main(ns) {
         let target,cash, targets=[];
         for( let i = 0; i < servers.length; i++) {
             let serverDetail = serverInfo(servers[i],false);
-            if( serverDetail.hasAdminRights && ( serverDetail.requiredHackingSkill < ( player.skills.hacking / 3 ) ) && ( cash == undefined || serverDetail.moneyMax > cash)) {
+            if( serverDetail.hasAdminRights && ( serverDetail.requiredHackingSkill < ( player.skills.hacking / 3 ) ) && ( cash == undefined || serverDetail.moneyMax > cash ) ) {
                 // ns.tprint(`Choosing ${serverDetail.hostname} for money hacking. ${serverDetail.moneyMax} > ${cash == undefined ? 0:cash} ${player.skills.hacking} > ${serverDetail.requiredHackingSkill}`)
                 target = serverDetail.hostname;
                 cash = serverDetail.moneyMax;
-                if ( ! skipHost.includes(serverDetail.hostname) && ! serverDetail.purchasedByPlayer && serverDetail.moneyMax > 0 && ! skipHost.includes( serverDetail.hostname ) )
-                    targets.push(serverDetail.hostname);
             }
+            if ( serverDetail.hasAdminRights && ! skipHost.includes(serverDetail.hostname) && ! serverDetail.purchasedByPlayer && serverDetail.moneyMax > 0 )
+                    targets.push(serverDetail.hostname);
         }
         let inte = targets.sort( function (a, b) {
             let d = serverInfo(a).moneyMax - serverInfo(b).moneyMax;
