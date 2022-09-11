@@ -123,7 +123,9 @@ export async function main(ns) {
 			try {
 				inputWager.focus;
 				inputWager.value=ammount;
+				await click(inputWager);
 				await setText(inputWager, `${ammount}`);
+				inputWager.stepUp();
 			} catch {
 				
 			}

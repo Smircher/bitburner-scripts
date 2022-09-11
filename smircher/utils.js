@@ -418,3 +418,107 @@ export async function findRetry(ns, xpath, expectFailure = false, retries = null
 		if (!expectFailure) throw e;
 	}
 }
+
+let serverDetails = {};
+/**
+ * getServerDetail
+ * @param {NS} ns
+ * @param {String} serverName
+ * @param {Boolean} useCache
+ * @returns {Server[]}
+ */
+export function getServerDetail(ns, serverName, useCache = true) {
+    if ( ! serverDetails[serverName]  || ! useCache )
+        serverDetails[serverName] = ns.getServer(serverName); // If we do not have it cached, then fetch it
+    return serverDetails[serverName]; 
+}
+
+/**
+ * canHackServer
+ * @param {NS} ns
+ * @param {String} serverName
+ * @param {Number} margin
+ * @returns {Boolean}
+ */
+export function canHackServer(ns, serverName, margin = 1 ) {
+    let player = ns.getPlayer();
+    let serverDetail = getServerDetail(ns, serverName);
+    if( serverDetail.purchasedByPlayer || 
+            player.skills.hacking * margin > serverDetail.requiredHackingSkill ) {
+        return true;
+    }
+    return false;
+}
+/**
+ * syncFiles
+ * @param {NS} ns
+ * @param {String} server
+ * @param {Array} [files]
+ */
+export async function syncFiles( ns, server, files = null ) {
+    files = files != null ? files:['/smircher/hack-manager.js','/smircher/Remote/weak-target.js','/smircher/Remote/grow-target.js','/smircher/Remote/hack-target.js'];
+    if( server !== "home") {
+        for( let i = 0; i < files.length; i++ ) {
+            await cancelHackServer( ns, files[i], server);
+            await ns.rm ( files[i], server );
+            await ns.scp ( files[i], server);
+        }  
+    }
+    return;
+}
+/**
+ * StartHackServer
+ * @param {NS} ns
+ * @param {String} server
+ * @returns {Promise}
+ */
+/**
+ * cancelHackServer
+ * @param {NS} ns
+ * @param {String} script
+ * @param {String} server
+ * @returns {Promise} 
+ */
+ export async function cancelHackServer ( ns, script=null, server ) {
+    if( script !== null ) {
+        try { await ns.scriptKill(script,server); } catch{}
+    } else {
+        try { await ns.scriptKill('/smircher/hack-manager.js',server); } catch{}
+        try { await ns.scriptKill('/smircher/Remote/weak-target.js',server); } catch{}
+        try { await ns.scriptKill('/smircher/Remote/grow-target.js',server); } catch{}
+        try { await ns.scriptKill('/smircher/Remote/hack-target.js',server); } catch{}
+    }
+    return;
+}
+/**
+ * scriptRamRequired
+ * @param {NS} ns
+ * @return {Object}
+ */
+export function scriptRamRequired(ns) {
+    let ram = {};
+    ram.weakenRam = ns.getScriptRam('/smircher/Remote/weak-target.js','home');
+    ram.growRam = ns.getScriptRam('/smircher/Remote/grow-target.js','home');
+    ram.hackRam = ns.getScriptRam('/smircher/Remote/hack-target.js','home');
+    ram.manageRam = ns.getScriptRam('/smircher/hack-manager.js', 'home');
+    return ram;
+}
+
+/** shuffleArray
+ * @param {NS} ns
+ * @param {Array} array
+ * @returns {Array}
+ */
+export function shuffleArray(ns, array) {
+    let currentIndex = array.length, randomIndex;
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
